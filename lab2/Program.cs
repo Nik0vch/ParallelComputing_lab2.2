@@ -4,44 +4,47 @@ class Program
 {
     static void Main(string[] args)
     {
-         if (args.Length == 0)
-         {
-             Console.WriteLine("Пожалуйста, укажите путь к файлу в качестве аргумента.");
-             return;
-         }
+        if (args.Length == 0)
+        {
+            Console.WriteLine("Пожалуйста, укажите путь к файлу в качестве аргумента.");
+            return;
+        }
 
-         string filePath = args[0];
+        string filePath = args[0];
         try
         {
             string longestWord = "";
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (StreamReader reader = new StreamReader(filePath, Encoding.UTF8))
             {
-                byte[] buffer = new byte[256];
-                string currentWord = "";
+                StringBuilder currentWord = new StringBuilder();
+                int ch;
 
-                int countReadBytes;
-
-                while ((countReadBytes = fileStream.Read(buffer, 0, buffer.Length)) > 0)
+                while ((ch = reader.Read()) != -1)
                 {
-                    string text = Encoding.UTF8.GetString(buffer, 0, countReadBytes);
+                    char character = (char)ch;
 
-                    foreach (char ch in text)
+                    if (!char.IsWhiteSpace(character) && !char.IsPunctuation(character))
                     {
-                        if (!char.IsWhiteSpace(ch) && !char.IsPunctuation(ch))
+                        currentWord.Append(character);
+                    }
+                    else
+                    {
+                        if (currentWord.Length > longestWord.Length)
                         {
-                            currentWord += ch;
-                            continue;
+                            longestWord = currentWord.ToString();
                         }
-
-                        longestWord = currentWord.Length > longestWord.Length ? currentWord : longestWord;
-                        currentWord = "";
+                        currentWord.Clear();
                     }
                 }
 
-                longestWord = currentWord.Length > longestWord.Length ? currentWord : longestWord;
+                // Проверяем последнее слово в случае, если файл не заканчивается пробелом или знаком препинания
+                if (currentWord.Length > longestWord.Length)
+                {
+                    longestWord = currentWord.ToString();
+                }
             }
 
-            if (longestWord == "")
+            if (string.IsNullOrEmpty(longestWord))
             {
                 Console.WriteLine("В файле нет слов.");
             }
